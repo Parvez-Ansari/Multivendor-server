@@ -6,6 +6,27 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
+// mutler code here
+
+const multer = require('multer')
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) =>
+  {
+    cb(null, './uploads/MerchantProfile')
+  },
+  filename: (req, file, cb) =>
+  {
+    cb(null, Date.now() + '_' + file.originalname)
+  }
+})
+
+const upload = multer({ storage: storage })
+
+
+
+// mutle code ends here
+
 app.use(express.json());
 
 const SERVER_SECRET = "abdrakadabra"
@@ -17,6 +38,8 @@ app.use(cors())
 // signup Schema for users
 
 const User = require("./Schema/UserSchema")
+
+const MerchantProfile = require("./Schema/MerchantProfile")
 
 // regular expressions
 
@@ -30,6 +53,25 @@ app.get('/', function (req, res)
   res.send("ohk")
 })
 
+
+// handing upload image here
+
+app.post('/upload', upload.single('shopImage'), function (req, res)
+{
+  try
+  {
+    res.send(req.file.path)
+    console.log(req.file)
+    let { shopName, ownerName, address, contact, category, uniqueID } = req.body
+
+    MerchantProfile.create({ shopName, ownerName, address, contact, category, uniqueID, ImgPath: req.file.path })
+
+
+  } catch (err)
+  {
+    console.log(err)
+  }
+});
 
 // handing user login here
 
